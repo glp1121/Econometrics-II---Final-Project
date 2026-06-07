@@ -6,6 +6,10 @@ library(tidyr)
 library(stringr)
 library(lubridate)
 library(ggplot2)
+library(plm)
+library(modelsummary)
+library(lmtest)
+library(sandwich)
 panel_data <- readRDS("Output/panel_data.rds")
 
 #檢查變數是否單根
@@ -34,7 +38,7 @@ panel_data <- panel_data %>%
   arrange(age_group, date) %>%
   group_by(age_group) %>%
   mutate(
-    d_real_min_wage = real_min_wage - lag(real_min_wage)
+    d_real_min_wage = real_min_wage - dplyr::lag(real_min_wage)
   ) %>%
   ungroup()
 
@@ -48,22 +52,83 @@ panel_data <- panel_data %>%
 
 m1 <- lm(
   unemployment ~
-    d_real_min_wage_k * age_group +
-    overall_unemployment,
+    d_real_min_wage_k * age_group + pros,
   data = panel_data
 )
 summary(m1)
-
-m1 <- lm(
-  unemployment ~
-    d_real_min_wage_k * age_group +
-    pros,
-  data = panel_data
+dwtest(m1)
+bptest(m1)
+coeftest(
+  m1,
+  vcov = NeweyWest(m1)
 )
 
-m_signal <- lm(
+m2 <- lm(unemployment ~ age_group, data = panel_data)
+summary(m2)
+
+pdata <- pdata.frame(
+  panel_data,
+  index = c("age_group", "date")
+)
+m3 <- plm(
   unemployment ~
-    d_real_min_wage_k * age_group +
+    d_real_min_wage_k +
     pros,
-  data = panel_data
+  data = pdata,
+  model = "within"
+)
+summary(m3)
+coeftest(
+  m3,
+  vcov = vcovHC(
+    m3,
+    method = "arellano",
+    type = "HC1",
+    cluster = "group"
+  )
+)
+
+youth_data <- panel_data %>%
+  filter(age_group == "15-24") %>%
+  mutate(month = month(date))
+
+m4 <- lm(
+  unemployment ~
+    d_real_min_wage_k +
+    pros +
+    factor(month),
+  data = youth_data
+)
+summary(m4)
+dwtest(m4)
+bptest(m4)
+coeftest(
+  m4,
+  vcov = NeweyWest(m4)
+)
+
+library(modelsummary)
+library(sandwich)
+library(plm)
+
+modelsummary(
+  list(
+    "Age Group Only" = m2,
+    "Full Sample OLS (HAC)" = m1,
+    "Fixed Effect (Robust)" = m3,
+    "Youth HAC" = m4
+  ),
+  vcov = list(
+    NULL,
+    NeweyWest(m1),
+    vcovHC(
+      m3,
+      method = "arellano",
+      type = "HC1",
+      cluster = "group"
+    ),
+    NeweyWest(m4)
+  ),
+  stars = TRUE,
+  output = "Tables/Regression.png"
 )
