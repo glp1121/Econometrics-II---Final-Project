@@ -47,8 +47,6 @@ unemp_long <- data %>%
   ) %>%
   select(date, age_group, unemployment)
 
-View(unemp_long)
-
 ##總失業率
 overall_raw <- read_excel(
   "Data/失業率-總計_2026060413526.xlsx",
@@ -134,15 +132,32 @@ cpi_monthly <- cpi_monthly %>%
   ) %>%
   select(date, CPI)
 
+##景氣指標
+pros_raw <- read_excel(
+  "Data/20260605054117.xls",
+  col_names = FALSE
+)
+library(dplyr)
+library(lubridate)
+pros <- pros_raw %>%
+  slice(-c(1, 2)) %>%
+  transmute(
+    date = ym(...1),
+    pros = as.numeric(...3)
+  )
+
 #Mutate
 panel_data <- unemp_long %>%
   left_join(cpi_monthly, by = "date")
+
 panel_data <- panel_data %>%
   left_join(min_wage_monthly, by = "date")
+
 panel_data <- panel_data %>% #實質最低薪資
   mutate(
     real_min_wage = min_wage / CPI * 100
   )
+
 panel_data <- panel_data %>%
   mutate(
     age_group = str_remove(age_group, "歲")
@@ -152,7 +167,10 @@ panel_data <- panel_data %>%
     overall_unemp,
     by = "date"
   )
+panel_data <- panel_data %>% 
+  left_join(pros, by = "date")
 
+#儲存
 saveRDS(
   panel_data,
   "Output/panel_data.rds"

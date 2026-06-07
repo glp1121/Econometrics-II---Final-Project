@@ -53,3 +53,17 @@ m1 <- lm(
   data = panel_data
 )
 summary(m1)
+
+m1 <- lm(
+  unemployment ~
+    d_real_min_wage_k * age_group +
+    pros,
+  data = panel_data
+)
+
+m_signal <- lm(
+  unemployment ~
+    d_real_min_wage_k * age_group +
+    pros,
+  data = panel_data
+)

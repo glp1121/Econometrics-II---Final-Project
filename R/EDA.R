@@ -95,3 +95,26 @@ ggsave(
   width = 8,
   height = 5
 )
+
+#失業率季節性變化
+f6 <- panel_data %>%
+  group_by(age_group,
+           month = month(date)) %>%
+  summarise(
+    mean_unemployment = mean(unemployment)
+  ) %>%
+  ggplot(
+    aes(month,
+        mean_unemployment,
+        color = age_group)
+  ) +
+  geom_line() +
+  geom_point()+
+  scale_x_continuous(
+    breaks = 1:12
+  )
+ggsave(
+  "Figures/f6.png",f6,
+  width = 8,
+  height = 5
+)
