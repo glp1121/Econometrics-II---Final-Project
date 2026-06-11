@@ -13,6 +13,7 @@ library(sandwich)
 panel_data <- readRDS("Output/panel_data.rds")
 
 #檢查變數是否單根
+
 wage <- panel_data %>%
   distinct(date, real_min_wage) %>%
   arrange(date) %>%
@@ -113,14 +114,16 @@ library(plm)
 
 modelsummary(
   list(
-    "Age Group Only" = m2,
-    "Full Sample OLS (HAC)" = m1,
-    "Fixed Effect (Robust)" = m3,
-    "Youth HAC" = m4
+    "Age FE Only" = m2,
+    "Pooled OLS" = m1,
+    "Pooled OLS (HAC)" = m1,
+    "Fixed Effects" = m3,
+    "Youth Model (HAC)" = m4
   ),
   vcov = list(
-    NULL,
-    NeweyWest(m1),
+    NULL,                 # m2
+    NULL,                 # m1 原始OLS標準誤
+    NeweyWest(m1),        # m1 HAC標準誤
     vcovHC(
       m3,
       method = "arellano",

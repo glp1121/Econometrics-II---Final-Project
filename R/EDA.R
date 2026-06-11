@@ -83,9 +83,9 @@ ggsave(
   height = 5
 )
 
-#總失業率與年齡失業率
+#總失業率與景氣
 f5 <- ggplot(panel_data,
-       aes(overall_unemployment,
+       aes(pros,
            unemployment,
            color = age_group)) +
   geom_point(alpha=.3) +
