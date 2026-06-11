@@ -163,17 +163,8 @@ Future studies could:
 
 ---
 
-## Software and Packages
-
 ### Software
 - R
-
-### Main Packages
-- tidyverse
-- dplyr
-- ggplot2
-- tseries
-- broom
 
 ---
 
@@ -199,6 +190,8 @@ Econometrics II Final Project
 
 Department of Economics
 
-National Chung Hsing University
+National Chengchi University
 
 Spring Semester 2026
+
+Instructor : Prof. Shih-Hsun Hsu
